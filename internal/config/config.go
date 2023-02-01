@@ -9,7 +9,9 @@ import (
 )
 
 type Config struct {
-	DBUri string `json:"db_uri"`
+	DBUri                string `json:"db_uri"`
+	HttpServerServerPort string `json:"http_server_port"`
+	GrpcServerPort       string `json:"grpc_server_port"`
 }
 
 func Load() (*Config, error) {

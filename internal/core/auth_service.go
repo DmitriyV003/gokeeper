@@ -2,10 +2,13 @@ package core
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"gokeeper/internal/requests"
+	"gokeeper/pkg/crypt"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
 	"time"
@@ -49,10 +52,28 @@ func (s *AuthService) CreateUser(ctx context.Context, request *requests.Registra
 		return nil, fmt.Errorf("error to generate hash from password: %w", err)
 	}
 
+	aesSecret := make([]byte, 64)
+	_, err = rand.Read(aesSecret)
+	if err != nil {
+		return nil, fmt.Errorf("error to generate random key: %w", err)
+	}
+
+	bobPrivateKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return nil, fmt.Errorf("error to generate RSA keys: %w", err)
+	}
+
+	encAESSecret, err := crypt.EncryptRSA(&bobPrivateKey.PublicKey, aesSecret)
+	if err != nil {
+		return nil, fmt.Errorf("error to encrypt AES key: %w", err)
+	}
+
 	user := User{
 		Login:     request.Login,
 		Password:  string(bytes),
 		CreatedAt: time.Now(),
+		AesSecret: string(encAESSecret),
+		RsaSecret: string(crypt.ExportPrivateKeyAsPemBytes(bobPrivateKey)),
 	}
 	err = s.users.Create(ctx, &user)
 	if err != nil {

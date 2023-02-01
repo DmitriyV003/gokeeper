@@ -14,8 +14,11 @@ import (
 	"gokeeper/internal/config"
 	"gokeeper/internal/core"
 	"gokeeper/internal/data"
+	"gokeeper/internal/proto"
+	"gokeeper/internal/server"
 	"gokeeper/internal/server/handlers"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"os"
@@ -42,13 +45,33 @@ func main() {
 		},
 	}
 
+	srv2 := &http.Server{
+		Addr:    ":8082",
+		Handler: nil,
+	}
+	var grpcServer *grpc.Server
+	var listen net.Listener
+	var err error
+	proto.RegisterLoginServiceServer(grpcServer, server.NewLoginSecretServer())
+
 	g, gCtx := errgroup.WithContext(mainCtx)
+	g.Go(func() error {
+		grpcServer = grpc.NewServer()
+		listen, err = net.Listen("tcp", ":8082")
+		return err
+	})
 	g.Go(func() error {
 		return srv.ListenAndServe()
 	})
 	g.Go(func() error {
+		return srv2.ListenAndServe()
+	})
+	g.Go(func() error {
 		<-gCtx.Done()
 		log.Warn().Msg("Server down")
+		grpcServer.Stop()
+		listen.Close()
+		srv2.Shutdown(gCtx)
 		return srv.Shutdown(gCtx)
 	})
 
