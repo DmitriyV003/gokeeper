@@ -1,4 +1,4 @@
-package data
+package postgres
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 }
 
 func (users *UserRepository) Create(ctx context.Context, user *core.User) error {
-	sql := `INSERT INTO users (login, password, created_at) VALUES ($1, $2, $3)`
+	sql := `INSERT INTO users (login, password, aes_secret, rsa_secret, created_at) VALUES ($1, $2, $3, $4, $5)`
 
 	dbUser, err := users.GetByLogin(ctx, user.Login)
 	if err != nil && !errors.Is(err, applicationerrors.ErrNotFound) {
@@ -33,7 +33,7 @@ func (users *UserRepository) Create(ctx context.Context, user *core.User) error 
 		return applicationerrors.ErrNotFound
 	}
 
-	_, err = users.db.Exec(ctx, sql, user.Login, user.Password, user.CreatedAt)
+	_, err = users.db.Exec(ctx, sql, user.Login, user.Password, user.AesSecret, user.RsaSecret, user.CreatedAt)
 
 	if err != nil {
 		return applicationerrors.ErrInternalServer
@@ -43,12 +43,12 @@ func (users *UserRepository) Create(ctx context.Context, user *core.User) error 
 }
 
 func (users *UserRepository) GetByLogin(ctx context.Context, login string) (*core.User, error) {
-	sql := `SELECT id, login, password, created_at FROM users WHERE login = $1`
+	sql := `SELECT id, login, password, aes_secret, rsa_secret, created_at FROM users WHERE login = $1`
 	var user core.User
 
 	row := users.db.QueryRow(ctx, sql, login)
 
-	err := row.Scan(&user.ID, &user.Login, &user.Password, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Login, &user.Password, &user.AesSecret, &user.RsaSecret, &user.CreatedAt)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
 	}

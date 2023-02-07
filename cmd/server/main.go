@@ -6,17 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 	"gokeeper/internal/config"
-	"gokeeper/internal/core"
-	"gokeeper/internal/data"
+	"gokeeper/internal/core/services"
+	"gokeeper/internal/data/postgres"
 	"gokeeper/internal/proto"
 	"gokeeper/internal/server"
-	"gokeeper/internal/server/handlers"
+	services2 "gokeeper/internal/services"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"net"
@@ -37,47 +35,39 @@ func main() {
 	mainCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: createHandler(pool),
-		BaseContext: func(listener net.Listener) context.Context {
-			return mainCtx
-		},
-	}
-
 	srv2 := &http.Server{
 		Addr:    ":8082",
 		Handler: nil,
 	}
-	var grpcServer *grpc.Server
+	grpcServer := grpc.NewServer()
 	var listen net.Listener
 	var err error
-	proto.RegisterLoginServiceServer(grpcServer, server.NewLoginSecretServer())
+
+	loginSecretRepo := postgres.NewLoginSecretRepository(pool)
+	userRepo := postgres.NewUserRepository(pool)
+	secretService := services.NewSecretService(loginSecretRepo)
+	authService := services2.NewAuthService(userRepo, "")
+	keyService := services.NewKeysService("")
+	userService := services2.NewUserService(keyService, userRepo)
+	proto.RegisterLoginSecretServiceServer(grpcServer, server.NewLoginSecretServer(secretService))
+	proto.RegisterUserServer(grpcServer, server.NewUserServer(authService, userService))
 
 	g, gCtx := errgroup.WithContext(mainCtx)
 	g.Go(func() error {
-		grpcServer = grpc.NewServer()
 		listen, err = net.Listen("tcp", ":8082")
 		return err
 	})
 	g.Go(func() error {
-		return srv.ListenAndServe()
-	})
-	g.Go(func() error {
-		return srv2.ListenAndServe()
-	})
-	g.Go(func() error {
 		<-gCtx.Done()
-		log.Warn().Msg("Server down")
 		grpcServer.Stop()
 		listen.Close()
-		srv2.Shutdown(gCtx)
-		return srv.Shutdown(gCtx)
+		return srv2.Shutdown(gCtx)
 	})
 
 	if err := g.Wait(); err != nil {
 		log.Error().Err(err).Msg("Server down")
 	}
+	log.Info().Msg("Application shutdown")
 }
 
 func initConfig() config.Config {
@@ -181,28 +171,6 @@ func createMigrationsTable(pool *pgxpool.Pool) {
 		log.Error().Err(err).Msg("Error during migrationFile")
 		return
 	}
-}
-
-func createHandler(pool *pgxpool.Pool) http.Handler {
-	router := chi.NewRouter()
-
-	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.StripSlashes)
-	router.Use(middleware.Compress(5))
-	router.Use(middleware.Heartbeat("/heartbeat"))
-
-	userRepository := data.NewUserRepository(pool)
-	userService := core.NewAuthService("SECRET", userRepository)
-
-	router.Route("/api", func(r chi.Router) {
-		r.Post("/register", handlers.NewRegisterHandler(userService).Handle())
-		r.Post("/login", handlers.NewLoginHandler(userService).Handle())
-	})
-
-	return router
 }
 
 type migration struct {

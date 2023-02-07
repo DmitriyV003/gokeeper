@@ -1,0 +1,4 @@
+db_uri: "postgres://homestead:homestead@localhost:54321/homestead"
+sqlite_uri: "postgres://homestead:homestead@localhost:54321/homestead"
+jwt_secret: "postgres://homestead:homestead@localhost:54321/homestead"
+grpc_server_port: "postgres://homestead:homestead@localhost:54321/homestead"

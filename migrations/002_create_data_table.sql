@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS credit_cards(
     valid_from VARCHAR (255) NULL,
     number VARCHAR (255) NULL,
     additional_data TEXT NULL,
+    user_id INTEGER NOT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT fk_credit_cards_users FOREIGN KEY (user_id) REFERENCES users (id)
     );
 
 CREATE TABLE IF NOT EXISTS logins(
@@ -19,8 +21,10 @@ CREATE TABLE IF NOT EXISTS logins(
     website VARCHAR (255) NULL,
     password VARCHAR (255) NULL,
     additional_data TEXT NULL,
+    user_id INTEGER NOT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT fk_logins_users FOREIGN KEY (user_id) REFERENCES users (id)
     );
 
 CREATE TABLE IF NOT EXISTS notes(
@@ -28,8 +32,10 @@ CREATE TABLE IF NOT EXISTS notes(
     name VARCHAR (255) NOT NULL,
     notes TEXT NULL,
     additional_data TEXT NULL,
+    user_id INTEGER NOT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT fk_notes_users FOREIGN KEY (user_id) REFERENCES users (id)
     );
 ---- create above / drop below ----
 

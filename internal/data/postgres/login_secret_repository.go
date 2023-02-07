@@ -1,4 +1,4 @@
-package data
+package postgres
 
 import (
 	"context"
@@ -12,10 +12,16 @@ type LoginSecretRepository struct {
 	db *pgxpool.Pool
 }
 
-func (l *LoginSecretRepository) Create(ctx context.Context, request core.LoginSecret) error {
-	sql := `INSERT INTO logins (name, username, website, password, additional_data, created_at) VALUES ($1, $2, $3, $4, $5, $6)`
+func NewLoginSecretRepository(db *pgxpool.Pool) *LoginSecretRepository {
+	return &LoginSecretRepository{
+		db: db,
+	}
+}
 
-	err := l.db.QueryRow(ctx, sql, request.Name, request.Username, request.Website, request.Password, request.AdditionalData, time.Now())
+func (l *LoginSecretRepository) Create(ctx context.Context, request core.LoginSecret) error {
+	sql := `INSERT INTO logins (name, username, website, password, additional_data, created_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+	err := l.db.QueryRow(ctx, sql, request.Name, request.Username, request.Website, request.Password, request.AdditionalData, time.Now(), request.UserID)
 	if err != nil {
 		return fmt.Errorf("unable to insert login to db: %w", err)
 	}

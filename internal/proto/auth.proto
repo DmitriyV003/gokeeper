@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "internal/proto";
+
+message RegisterRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string token = 1;
+  string aes_secret = 2;
+  string private_key = 3;
+}
+
+service User {
+  rpc Register (RegisterRequest) returns (AuthResponse);
+  rpc Login (LoginRequest) returns (AuthResponse);
+}

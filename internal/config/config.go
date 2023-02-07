@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	DBUri                string `json:"db_uri"`
-	HttpServerServerPort string `json:"http_server_port"`
-	GrpcServerPort       string `json:"grpc_server_port"`
+	DBUri          string `json:"db_uri" yaml:"db_uri" default:"postgres://homestead:homestead@localhost:54321/homestead"`
+	SQLiteUri      string `json:"sqlite_uri" yaml:"sqlite_uri" default:"./ddd"`
+	JWTSecret      string `json:"jwt_secret" yaml:"jwt_secret" default:"FDERF$GRHHJ%TWETEHHYEH"`
+	GrpcServerPort string `json:"grpc_server_port" yaml:"grpc_server_port" default:":8082"`
 }
 
 func Load() (*Config, error) {
@@ -52,7 +53,6 @@ func getFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	viper.AutomaticEnv()
 
 	return viper.GetString("config"), nil
 }

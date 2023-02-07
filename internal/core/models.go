@@ -7,4 +7,5 @@ type LoginSecret struct {
 	Password       string
 	AdditionalData string
 	ID             int64
+	UserID         int64
 }

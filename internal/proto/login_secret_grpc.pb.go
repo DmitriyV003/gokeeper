@@ -18,158 +18,158 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// LoginServiceClient is the client API for LoginService service.
+// LoginSecretServiceClient is the client API for LoginSecretService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LoginServiceClient interface {
-	CreateLoginSecret(ctx context.Context, in *CreateLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error)
-	UpdateLoginSecret(ctx context.Context, in *UpdateLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error)
-	DeleteLoginSecret(ctx context.Context, in *DeleteLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error)
+type LoginSecretServiceClient interface {
+	CreateLoginSecret(ctx context.Context, in *CreateLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error)
+	UpdateLoginSecret(ctx context.Context, in *UpdateLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error)
+	DeleteLoginSecret(ctx context.Context, in *DeleteLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error)
 }
 
-type loginServiceClient struct {
+type loginSecretServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLoginServiceClient(cc grpc.ClientConnInterface) LoginServiceClient {
-	return &loginServiceClient{cc}
+func NewLoginSecretServiceClient(cc grpc.ClientConnInterface) LoginSecretServiceClient {
+	return &loginSecretServiceClient{cc}
 }
 
-func (c *loginServiceClient) CreateLoginSecret(ctx context.Context, in *CreateLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error) {
-	out := new(SecretResponse)
-	err := c.cc.Invoke(ctx, "/proto.LoginService/CreateLoginSecret", in, out, opts...)
+func (c *loginSecretServiceClient) CreateLoginSecret(ctx context.Context, in *CreateLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error) {
+	out := new(SecretSecretResponse)
+	err := c.cc.Invoke(ctx, "/proto.LoginSecretService/CreateLoginSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *loginServiceClient) UpdateLoginSecret(ctx context.Context, in *UpdateLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error) {
-	out := new(SecretResponse)
-	err := c.cc.Invoke(ctx, "/proto.LoginService/UpdateLoginSecret", in, out, opts...)
+func (c *loginSecretServiceClient) UpdateLoginSecret(ctx context.Context, in *UpdateLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error) {
+	out := new(SecretSecretResponse)
+	err := c.cc.Invoke(ctx, "/proto.LoginSecretService/UpdateLoginSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *loginServiceClient) DeleteLoginSecret(ctx context.Context, in *DeleteLoginSecretRequest, opts ...grpc.CallOption) (*SecretResponse, error) {
-	out := new(SecretResponse)
-	err := c.cc.Invoke(ctx, "/proto.LoginService/DeleteLoginSecret", in, out, opts...)
+func (c *loginSecretServiceClient) DeleteLoginSecret(ctx context.Context, in *DeleteLoginSecretRequest, opts ...grpc.CallOption) (*SecretSecretResponse, error) {
+	out := new(SecretSecretResponse)
+	err := c.cc.Invoke(ctx, "/proto.LoginSecretService/DeleteLoginSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LoginServiceServer is the server API for LoginService service.
-// All implementations must embed UnimplementedLoginServiceServer
+// LoginSecretServiceServer is the server API for LoginSecretService service.
+// All implementations must embed UnimplementedLoginSecretServiceServer
 // for forward compatibility
-type LoginServiceServer interface {
-	CreateLoginSecret(context.Context, *CreateLoginSecretRequest) (*SecretResponse, error)
-	UpdateLoginSecret(context.Context, *UpdateLoginSecretRequest) (*SecretResponse, error)
-	DeleteLoginSecret(context.Context, *DeleteLoginSecretRequest) (*SecretResponse, error)
-	mustEmbedUnimplementedLoginServiceServer()
+type LoginSecretServiceServer interface {
+	CreateLoginSecret(context.Context, *CreateLoginSecretRequest) (*SecretSecretResponse, error)
+	UpdateLoginSecret(context.Context, *UpdateLoginSecretRequest) (*SecretSecretResponse, error)
+	DeleteLoginSecret(context.Context, *DeleteLoginSecretRequest) (*SecretSecretResponse, error)
+	mustEmbedUnimplementedLoginSecretServiceServer()
 }
 
-// UnimplementedLoginServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedLoginServiceServer struct {
+// UnimplementedLoginSecretServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedLoginSecretServiceServer struct {
 }
 
-func (UnimplementedLoginServiceServer) CreateLoginSecret(context.Context, *CreateLoginSecretRequest) (*SecretResponse, error) {
+func (UnimplementedLoginSecretServiceServer) CreateLoginSecret(context.Context, *CreateLoginSecretRequest) (*SecretSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateLoginSecret not implemented")
 }
-func (UnimplementedLoginServiceServer) UpdateLoginSecret(context.Context, *UpdateLoginSecretRequest) (*SecretResponse, error) {
+func (UnimplementedLoginSecretServiceServer) UpdateLoginSecret(context.Context, *UpdateLoginSecretRequest) (*SecretSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateLoginSecret not implemented")
 }
-func (UnimplementedLoginServiceServer) DeleteLoginSecret(context.Context, *DeleteLoginSecretRequest) (*SecretResponse, error) {
+func (UnimplementedLoginSecretServiceServer) DeleteLoginSecret(context.Context, *DeleteLoginSecretRequest) (*SecretSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLoginSecret not implemented")
 }
-func (UnimplementedLoginServiceServer) mustEmbedUnimplementedLoginServiceServer() {}
+func (UnimplementedLoginSecretServiceServer) mustEmbedUnimplementedLoginSecretServiceServer() {}
 
-// UnsafeLoginServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LoginServiceServer will
+// UnsafeLoginSecretServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LoginSecretServiceServer will
 // result in compilation errors.
-type UnsafeLoginServiceServer interface {
-	mustEmbedUnimplementedLoginServiceServer()
+type UnsafeLoginSecretServiceServer interface {
+	mustEmbedUnimplementedLoginSecretServiceServer()
 }
 
-func RegisterLoginServiceServer(s grpc.ServiceRegistrar, srv LoginServiceServer) {
-	s.RegisterService(&LoginService_ServiceDesc, srv)
+func RegisterLoginSecretServiceServer(s grpc.ServiceRegistrar, srv LoginSecretServiceServer) {
+	s.RegisterService(&LoginSecretService_ServiceDesc, srv)
 }
 
-func _LoginService_CreateLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _LoginSecretService_CreateLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateLoginSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LoginServiceServer).CreateLoginSecret(ctx, in)
+		return srv.(LoginSecretServiceServer).CreateLoginSecret(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.LoginService/CreateLoginSecret",
+		FullMethod: "/proto.LoginSecretService/CreateLoginSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoginServiceServer).CreateLoginSecret(ctx, req.(*CreateLoginSecretRequest))
+		return srv.(LoginSecretServiceServer).CreateLoginSecret(ctx, req.(*CreateLoginSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LoginService_UpdateLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _LoginSecretService_UpdateLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateLoginSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LoginServiceServer).UpdateLoginSecret(ctx, in)
+		return srv.(LoginSecretServiceServer).UpdateLoginSecret(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.LoginService/UpdateLoginSecret",
+		FullMethod: "/proto.LoginSecretService/UpdateLoginSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoginServiceServer).UpdateLoginSecret(ctx, req.(*UpdateLoginSecretRequest))
+		return srv.(LoginSecretServiceServer).UpdateLoginSecret(ctx, req.(*UpdateLoginSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LoginService_DeleteLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _LoginSecretService_DeleteLoginSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteLoginSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LoginServiceServer).DeleteLoginSecret(ctx, in)
+		return srv.(LoginSecretServiceServer).DeleteLoginSecret(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.LoginService/DeleteLoginSecret",
+		FullMethod: "/proto.LoginSecretService/DeleteLoginSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoginServiceServer).DeleteLoginSecret(ctx, req.(*DeleteLoginSecretRequest))
+		return srv.(LoginSecretServiceServer).DeleteLoginSecret(ctx, req.(*DeleteLoginSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// LoginService_ServiceDesc is the grpc.ServiceDesc for LoginService service.
+// LoginSecretService_ServiceDesc is the grpc.ServiceDesc for LoginSecretService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LoginService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.LoginService",
-	HandlerType: (*LoginServiceServer)(nil),
+var LoginSecretService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.LoginSecretService",
+	HandlerType: (*LoginSecretServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateLoginSecret",
-			Handler:    _LoginService_CreateLoginSecret_Handler,
+			Handler:    _LoginSecretService_CreateLoginSecret_Handler,
 		},
 		{
 			MethodName: "UpdateLoginSecret",
-			Handler:    _LoginService_UpdateLoginSecret_Handler,
+			Handler:    _LoginSecretService_UpdateLoginSecret_Handler,
 		},
 		{
 			MethodName: "DeleteLoginSecret",
-			Handler:    _LoginService_DeleteLoginSecret_Handler,
+			Handler:    _LoginSecretService_DeleteLoginSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
