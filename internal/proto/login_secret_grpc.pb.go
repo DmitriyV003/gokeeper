@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: login_secret.proto
+// source: internal/proto/login_secret.proto
 
 package proto
 
@@ -173,5 +173,5 @@ var LoginSecretService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "login_secret.proto",
+	Metadata: "internal/proto/login_secret.proto",
 }

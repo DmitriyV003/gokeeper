@@ -25,9 +25,8 @@ import (
 )
 
 func main() {
-	_ = initConfig()
-	//pool := connectToDB(cfg.DBUri)
-	pool := connectToDB("postgres://homestead:homestead@localhost:54321/homestead")
+	cfg := initConfig()
+	pool := connectToDB(cfg.DBUri)
 	if pool != nil {
 		migrate(pool)
 	}
@@ -36,7 +35,7 @@ func main() {
 	defer stop()
 
 	srv2 := &http.Server{
-		Addr:    ":8082",
+		Addr:    cfg.GrpcServerPort,
 		Handler: nil,
 	}
 	grpcServer := grpc.NewServer()
@@ -46,15 +45,15 @@ func main() {
 	loginSecretRepo := postgres.NewLoginSecretRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
 	secretService := services.NewSecretService(loginSecretRepo)
-	authService := services2.NewAuthService(userRepo, "")
-	keyService := services.NewKeysService("")
+	authService := services2.NewAuthService(userRepo, cfg.JWTSecret)
+	keyService := services.NewKeysService(cfg.MasterPassword)
 	userService := services2.NewUserService(keyService, userRepo)
 	proto.RegisterLoginSecretServiceServer(grpcServer, server.NewLoginSecretServer(secretService))
 	proto.RegisterUserServer(grpcServer, server.NewUserServer(authService, userService))
 
 	g, gCtx := errgroup.WithContext(mainCtx)
 	g.Go(func() error {
-		listen, err = net.Listen("tcp", ":8082")
+		listen, err = net.Listen("tcp", cfg.GrpcServerPort)
 		return err
 	})
 	g.Go(func() error {

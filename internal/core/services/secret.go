@@ -18,7 +18,7 @@ func NewSecretService(secretsRepo *postgres.LoginSecretRepository) *SecretServic
 	}
 }
 
-func (s *SecretService) CreateLoginSecret(ctx context.Context, req *proto.CreateLoginSecretRequest) error {
+func (s *SecretService) CreateLoginSecret(ctx context.Context, req *proto.CreateLoginSecretRequest) (int64, error) {
 	loginSecret := core.LoginSecret{
 		Name:           req.Name,
 		Username:       req.Username,
@@ -28,12 +28,12 @@ func (s *SecretService) CreateLoginSecret(ctx context.Context, req *proto.Create
 		ID:             0,
 	}
 
-	err := s.secretsRepo.Create(ctx, loginSecret)
+	id, err := s.secretsRepo.Create(ctx, loginSecret)
 	if err != nil {
-		return fmt.Errorf("error to save login: %w", err)
+		return 0, fmt.Errorf("error to save login: %w", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *SecretService) UpdateLoginSecret(ctx context.Context, req *proto.UpdateLoginSecretRequest) error {

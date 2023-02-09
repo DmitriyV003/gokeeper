@@ -2,30 +2,36 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"gokeeper/internal/data/postgres"
+	"gokeeper/internal/core"
 	"gokeeper/internal/data/sqlite"
 	"gokeeper/internal/proto"
 )
 
 type LoginSecretService struct {
-	authService    *AuthService
-	client         proto.LoginSecretServiceClient
-	settingsRepo   *sqlite.SettingsRepository
-	masterPassword string
-	keysService    *KeysService
-	usersRepo      *postgres.UserRepository
+	authService     *AuthService
+	client          proto.LoginSecretServiceClient
+	settingsRepo    *sqlite.SettingsRepository
+	masterPassword  string
+	keysService     *KeysService
+	loginSecretRepo *sqlite.LoginSecretRepository
 }
 
-func NewLoginSecretService(authService *AuthService, client proto.LoginSecretServiceClient, settingsRepo *sqlite.SettingsRepository, masterPassword string, keysService *KeysService, userRepo *postgres.UserRepository) *LoginSecretService {
+func NewLoginSecretService(
+	authService *AuthService,
+	client proto.LoginSecretServiceClient,
+	settingsRepo *sqlite.SettingsRepository,
+	masterPassword string,
+	keysService *KeysService,
+	loginSecretRepo *sqlite.LoginSecretRepository,
+) *LoginSecretService {
 	return &LoginSecretService{
-		authService:    authService,
-		client:         client,
-		settingsRepo:   settingsRepo,
-		masterPassword: masterPassword,
-		keysService:    keysService,
-		usersRepo:      userRepo,
+		authService:     authService,
+		client:          client,
+		settingsRepo:    settingsRepo,
+		masterPassword:  masterPassword,
+		keysService:     keysService,
+		loginSecretRepo: loginSecretRepo,
 	}
 }
 
@@ -46,25 +52,36 @@ func (l *LoginSecretService) Create(ctx context.Context, name, username, website
 
 	l.authService.ParseTokenWithClaims(&token)
 
-	login := token.Claims["sub"]
-	strLogin := login.(string)
-	if strLogin == "" {
-		return errors.New("login empty")
-	}
-	user, err := l.usersRepo.GetByLogin(ctx, strLogin)
+	id := token.Claims["sub"]
+	pId := id.(int64)
+	aesSecret, _, err := l.settingsRepo.Get(ctx, "aes_secret")
 	if err != nil {
 		return fmt.Errorf("error to get user: %w", err)
 	}
 
-	securityService := NewSecurityService(user.AesSecret, user.RsaSecret, l.masterPassword, l.keysService)
+	rsaSecret, _, err := l.settingsRepo.Get(ctx, "private_key")
+	if err != nil {
+		return fmt.Errorf("error to get user: %w", err)
+	}
+
+	securityService := NewSecurityService(aesSecret, rsaSecret, l.masterPassword, l.keysService)
 	encPassword, err := securityService.CryptMessage(password)
 	if err != nil {
 		return fmt.Errorf("error to encrypt secret: %w", err)
 	}
 
-	req.UserID = user.ID
+	req.UserID = pId
 	req.Password = encPassword
-	l.client.CreateLoginSecret(ctx, &req)
+	res, _ := l.client.CreateLoginSecret(ctx, &req)
+
+	l.loginSecretRepo.Create(ctx, core.LoginSecret{
+		Name:           name,
+		Username:       username,
+		Website:        website,
+		Password:       encPassword,
+		AdditionalData: additionalData,
+		ID:             res.ID,
+	})
 
 	return nil
 }

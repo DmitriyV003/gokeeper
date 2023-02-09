@@ -18,9 +18,11 @@ func NewLoginSecretServer(secretService *services.SecretService) *LoginSecretSer
 }
 
 func (l *LoginSecretServer) CreateLoginSecret(ctx context.Context, req *proto.CreateLoginSecretRequest) (*proto.SecretSecretResponse, error) {
-	l.secretService.CreateLoginSecret(ctx, req)
+	id, _ := l.secretService.CreateLoginSecret(ctx, req)
 
-	return &proto.SecretSecretResponse{}, nil
+	return &proto.SecretSecretResponse{
+		ID: id,
+	}, nil
 }
 
 func (l *LoginSecretServer) UpdateLoginSecret(context.Context, *proto.UpdateLoginSecretRequest) (*proto.SecretSecretResponse, error) {

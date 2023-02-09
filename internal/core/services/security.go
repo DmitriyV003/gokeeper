@@ -1,8 +1,11 @@
 package services
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"fmt"
-	"gokeeper/pkg/crypt"
+	"io"
 )
 
 type SecurityService struct {
@@ -22,29 +25,58 @@ func NewSecurityService(aesEncPrivateKey string, rsaEncPrivateKey string, master
 }
 
 func (s *SecurityService) DecryptMessage(mes string) (string, error) {
-	aes, _, err := s.keysService.DecodeKeys(s.aesEncPrivateKey, s.rsaEncPrivateKey)
+	data := []byte(mes)
+	aesSecret, _, err := s.keysService.DecodeKeys(s.aesEncPrivateKey, s.rsaEncPrivateKey)
 	if err != nil {
 		return "", fmt.Errorf("error to decode keys: %w", err)
 	}
 
-	res, err := crypt.DecryptAES(aes, mes)
+	c, err := aes.NewCipher(aesSecret)
 	if err != nil {
-		return "", fmt.Errorf("error to decrypt AES message: %w", err)
+		return "", fmt.Errorf("error to generate new cipher: %w", err)
 	}
 
-	return res, nil
+	gcmDecrypt, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", fmt.Errorf("error to generate NewGCM: %w", err)
+	}
+
+	nonceSize := gcmDecrypt.NonceSize()
+	if len(data) < nonceSize {
+		return "", fmt.Errorf("message len in less than nonsize: %w", err)
+	}
+
+	nonce, encryptedMessage := data[:nonceSize], data[nonceSize:]
+	plaintext, err := gcmDecrypt.Open(nil, nonce, encryptedMessage, nil)
+	if err != nil {
+		return "", fmt.Errorf("error to decrypt: %w", err)
+	}
+	fmt.Println(string(plaintext))
+
+	return string(plaintext), nil
 }
 
 func (s *SecurityService) CryptMessage(mes string) (string, error) {
-	aes, _, err := s.keysService.DecodeKeys(s.aesEncPrivateKey, s.rsaEncPrivateKey)
+	aesSecret, _, err := s.keysService.DecodeKeys(s.aesEncPrivateKey, s.rsaEncPrivateKey)
 	if err != nil {
 		return "", fmt.Errorf("error to decode keys: %w", err)
 	}
 
-	res, err := crypt.EncryptAES(aes, mes)
+	cphr, err := aes.NewCipher(aesSecret)
 	if err != nil {
-		return "", fmt.Errorf("error to crypt AES message: %w", err)
+		return "", fmt.Errorf("error to generate new cipher: %w", err)
 	}
 
-	return res, nil
+	gcm, err := cipher.NewGCM(cphr)
+	if err != nil {
+		return "", fmt.Errorf("error to generate NewGCM: %w", err)
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", fmt.Errorf("error to readFull: %w", err)
+	}
+	enc := gcm.Seal(nonce, nonce, []byte(mes), nil)
+
+	return string(enc), nil
 }

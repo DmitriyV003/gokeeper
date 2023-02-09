@@ -1,58 +1,31 @@
 package config
 
 import (
-	"flag"
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
-	DBUri          string `json:"db_uri" yaml:"db_uri" default:"postgres://homestead:homestead@localhost:54321/homestead"`
-	SQLiteUri      string `json:"sqlite_uri" yaml:"sqlite_uri" default:"./ddd"`
-	JWTSecret      string `json:"jwt_secret" yaml:"jwt_secret" default:"FDERF$GRHHJ%TWETEHHYEH"`
-	GrpcServerPort string `json:"grpc_server_port" yaml:"grpc_server_port" default:":8082"`
+	DBUri          string `envconfig:"DB_URI" default:"postgres://homestead:homestead@localhost:54321/homestead"`
+	SQLiteUri      string `envconfig:"SQLLITE_URI" default:"./ddd"`
+	JWTSecret      string `envconfig:"JWT_SECRET" default:"FDERF$GRHHJ%TWETEHHYEH"`
+	GrpcServerPort string `envconfig:"GRPC_SERVER_PORT" default:":8082"`
+	MasterPassword string `envconfig:"MASTER_PASSWORD"`
 }
 
 func Load() (*Config, error) {
-	path, err := getFilePath()
+	err := godotenv.Load()
 	if err != nil {
-		return nil, errors.Wrap(err, "can not get config path")
-	}
-
-	if path == "" {
-		return nil, errors.New("can not load config from empty path")
-	}
-
-	v := viper.New()
-	v.SetConfigFile(path)
-	v.SetConfigType("json")
-
-	err = v.ReadInConfig()
-	if err != nil {
-		return nil, err
+		log.Err(err).Msg("error load config from .env file")
 	}
 
 	config := Config{}
-	err = v.Unmarshal(&config)
+	err = envconfig.Process("", &config)
 	if err != nil {
-		return nil, errors.Wrap(err, "can not unmarshal config from file to struct")
+		return nil, errors.New("can not load config")
 	}
-	log.Println(config)
 
 	return &config, nil
-}
-
-func getFilePath() (string, error) {
-	flag.String("config", "./config/config.json", "path to config file")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	err := viper.BindPFlags(pflag.CommandLine)
-	if err != nil {
-		return "", err
-	}
-
-	return viper.GetString("config"), nil
 }

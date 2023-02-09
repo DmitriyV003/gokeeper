@@ -54,7 +54,7 @@ func (s *AuthService) generateJWT(user *core.User) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(24 * 60 * time.Minute).Unix()
 	claims["iat"] = time.Now().Unix()
-	claims["sub"] = user.Login
+	claims["sub"] = user.ID
 
 	tokenString, err := token.SignedString([]byte(s.secret))
 	if err != nil {

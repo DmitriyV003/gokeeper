@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS credit_cards(
     name VARCHAR (255) NOT NULL,
     cardholder_name VARCHAR (255) NULL,
     type VARCHAR (255) NULL,
-    cardholder_name VARCHAR (255) NULL,
     expire_date VARCHAR (255) NULL,
     valid_from VARCHAR (255) NULL,
     number VARCHAR (255) NULL,

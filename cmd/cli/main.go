@@ -40,11 +40,12 @@ func main() {
 
 	settingsRepo := sqlite2.NewSettingsRepository(db)
 	authService := services2.NewAuthService(cfg.JWTSecret, settingsRepo)
-	keysService := services2.NewKeysService("")
+	keysService := services2.NewKeysService(cfg.MasterPassword)
+	loginSecretRepo := sqlite2.NewLoginSecretRepository(db)
 	deps := commands.Deps{
 		AuthService:        authService,
-		UserService:        services2.NewUserService(client.NewUserClient(ctx, ":8082"), settingsRepo),
-		LoginSecretService: services2.NewLoginSecretService(authService, client.NewLoginSecretClient(ctx, ":8082"), settingsRepo, "", keysService),
+		UserService:        services2.NewUserService(client.NewUserClient(ctx, cfg.GrpcServerPort), settingsRepo),
+		LoginSecretService: services2.NewLoginSecretService(authService, client.NewLoginSecretClient(ctx, cfg.GrpcServerPort), settingsRepo, cfg.MasterPassword, keysService, loginSecretRepo),
 	}
 
 	commands.Execute(ctx, deps)

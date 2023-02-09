@@ -18,9 +18,6 @@ func NewKeysService(masterPassword string) *KeysService {
 	}
 }
 
-// GenerateKeys создаёт AES ключ и приватный ключ, который в свою очередь шифрует AES.
-//
-// Возвращает ключи в зашифрованном виде строкой, где первый ключ - AES, а второй - приватный.
 func (s *KeysService) GenerateKeys() (string, string, error) {
 	aesSecret := make([]byte, 32)
 	_, err := rand.Read(aesSecret)

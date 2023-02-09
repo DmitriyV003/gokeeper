@@ -11,7 +11,7 @@ func init() {
 var createLoginCmd = &cobra.Command{
 	Use:       "create-login",
 	Short:     "create login secret",
-	Args:      cobra.MinimumNArgs(2),
+	Args:      cobra.MinimumNArgs(5),
 	ValidArgs: []string{"name", "username", "website", "password", "additional_data"},
 	Run: func(cmd *cobra.Command, args []string) {
 		authorized, err := deps.AuthService.CheckAuthorized(cmd.Context())
