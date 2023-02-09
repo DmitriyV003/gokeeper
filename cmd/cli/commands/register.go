@@ -19,8 +19,7 @@ var registerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		authorized, err := deps.AuthService.CheckAuthorized(cmd.Context())
 		if authorized || errors.Is(err, data.ErrLoggedInAlready) {
-			cmd.PrintErrln("You are already logged into the system. " +
-				"If you want to register a new user then logout first.")
+			cmd.PrintErrln("You are already logged into the system.")
 			return
 		}
 		if err != nil {
@@ -32,7 +31,7 @@ var registerCmd = &cobra.Command{
 
 		if err := deps.UserService.Register(cmd.Context(), login, password); err != nil {
 			if errors.Is(err, data.ErrLoginTaken) {
-				cmd.PrintErrln("This login is already taken. Try another one.")
+				cmd.PrintErrln("This login is already taken.")
 				return
 			}
 

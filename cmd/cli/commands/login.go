@@ -19,8 +19,7 @@ var loginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		authorized, err := deps.AuthService.CheckAuthorized(cmd.Context())
 		if authorized || errors.Is(err, data.ErrLoggedInAlready) {
-			cmd.PrintErrln("You are already logged into the system. " +
-				"If you want to login via another user then logout first.")
+			cmd.PrintErrln("You are already logged into the system.")
 			return
 		}
 		if err != nil {

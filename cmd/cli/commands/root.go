@@ -16,13 +16,13 @@ type Deps struct {
 var (
 	rootCmd = &cobra.Command{
 		Use:   "gophkeeper",
-		Short: "Passwords Manager GophKeeper",
+		Short: "Passwords Manager gophkeeper",
 	}
 
 	deps Deps
 
 	unauthorized = func(cmd *cobra.Command) {
-		cmd.PrintErrln("You are not authorized in order to perform this action")
+		cmd.PrintErrln("You are not authorized")
 	}
 )
 
