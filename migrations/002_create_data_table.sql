@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS credit_cards(
     id serial PRIMARY KEY,
-    name VARCHAR (255) NOT NULL,
     cardholder_name VARCHAR (255) NULL,
     type VARCHAR (255) NULL,
     expire_date VARCHAR (255) NULL,
@@ -15,7 +14,6 @@ CREATE TABLE IF NOT EXISTS credit_cards(
 
 CREATE TABLE IF NOT EXISTS logins(
     id serial PRIMARY KEY,
-    name VARCHAR (255) NOT NULL,
     username VARCHAR (255) NULL,
     website VARCHAR (255) NULL,
     password VARCHAR (255) NULL,
@@ -28,7 +26,6 @@ CREATE TABLE IF NOT EXISTS logins(
 
 CREATE TABLE IF NOT EXISTS notes(
     id serial PRIMARY KEY,
-    name VARCHAR (255) NOT NULL,
     notes TEXT NULL,
     additional_data TEXT NULL,
     user_id INTEGER NOT NULL,

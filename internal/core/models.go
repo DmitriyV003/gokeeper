@@ -1,7 +1,6 @@
 package core
 
 type LoginSecret struct {
-	Name           string
 	Username       string
 	Website        string
 	Password       string
