@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v4"
@@ -15,6 +16,7 @@ import (
 	"gokeeper/internal/proto"
 	"gokeeper/internal/server"
 	services2 "gokeeper/internal/services"
+	"gokeeper/pkg/crypt"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"net"
@@ -31,6 +33,11 @@ func main() {
 		migrate(pool)
 	}
 
+	tlsConf, err := crypt.LoadServerCertificate(cfg.SslCertPath, cfg.SslKeyPath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Loading server TLS cert")
+	}
+
 	mainCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -40,7 +47,6 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	var listen net.Listener
-	var err error
 
 	loginSecretRepo := postgres.NewLoginSecretRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
@@ -53,7 +59,7 @@ func main() {
 
 	g, gCtx := errgroup.WithContext(mainCtx)
 	g.Go(func() error {
-		listen, err = net.Listen("tcp", cfg.GrpcServerPort)
+		listen, err = tls.Listen("tcp", cfg.GrpcServerPort, tlsConf)
 		return err
 	})
 	g.Go(func() error {

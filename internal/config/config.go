@@ -13,6 +13,8 @@ type Config struct {
 	JWTSecret      string `envconfig:"JWT_SECRET" default:"FDERF$GRHHJ%TWETEHHYEH"`
 	GrpcServerPort string `envconfig:"GRPC_SERVER_PORT" default:":8082"`
 	MasterPassword string `envconfig:"MASTER_PASSWORD"`
+	SslCertPath    string `envconfig:"SSL_CERT_PATH"`
+	SslKeyPath     string `envconfig:"SSL_KEY_PATH"`
 }
 
 func Load() (*Config, error) {

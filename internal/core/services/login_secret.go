@@ -90,6 +90,25 @@ func (l *LoginSecretService) Delete(ctx context.Context, id int64) error {
 		return fmt.Errorf("delete logins secret: %w", err)
 	}
 
+	jwt, _, _ := l.settingsRepo.Get(ctx, "jwt")
+	token := Token{
+		Value:  jwt,
+		Claims: map[string]interface{}{},
+	}
+	l.authService.ParseTokenWithClaims(&token)
+
+	userId := token.Claims["sub"]
+	pUserId := userId.(int64)
+
+	req := proto.DeleteLoginSecretRequest{
+		Id:     id,
+		UserID: pUserId,
+	}
+	_, err := l.client.DeleteLoginSecret(ctx, &req)
+	if err != nil {
+		return fmt.Errorf("error to delete login secret: %w", err)
+	}
+
 	return nil
 }
 

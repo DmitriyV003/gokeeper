@@ -20,7 +20,6 @@ func NewSecretService(secretsRepo *postgres.LoginSecretRepository) *SecretServic
 
 func (s *SecretService) CreateLoginSecret(ctx context.Context, req *proto.CreateLoginSecretRequest) (int64, error) {
 	loginSecret := core.LoginSecret{
-		Name:           req.Name,
 		Username:       req.Username,
 		Website:        req.Website,
 		Password:       req.Password,
@@ -38,7 +37,6 @@ func (s *SecretService) CreateLoginSecret(ctx context.Context, req *proto.Create
 
 func (s *SecretService) UpdateLoginSecret(ctx context.Context, req *proto.UpdateLoginSecretRequest) error {
 	loginSecret := core.LoginSecret{
-		Name:           req.Name,
 		Username:       req.Username,
 		Website:        req.Website,
 		Password:       req.Password,
