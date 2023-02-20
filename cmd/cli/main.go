@@ -51,8 +51,8 @@ func main() {
 	commands.Execute(ctx, deps)
 }
 
-func initConfig() config2.Config {
-	cfg, err := config2.Load()
+func initConfig() config2.ClientConfig {
+	cfg, err := config2.LoadClient()
 	if err != nil {
 		log.Fatal().Err(err).Msgf("can not load config")
 	}
