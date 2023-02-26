@@ -55,6 +55,10 @@ func (s *SQLite) migrate() error {
 		return err
 	}
 
+	if err := s.createCardSecretsTable(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -93,6 +97,24 @@ func (s *SQLite) createLoginSecretsTable() error {
 		password    TEXT NOT NULL,
 		additional_data TEXT NOT NULL,
 		user_id			TEXT NOT NULL
+	)`
+	if _, err := s.Exec(query); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SQLite) createCardSecretsTable() error {
+	query := `CREATE TABLE IF NOT EXISTS cards (
+		id  INTEGER PRIMARY KEY AUTOINCREMENT,
+   		cardholder_name TEXT NOT NULL,
+    	type TEXT NOT NULL,
+    	expire_date TEXT NOT NULL,
+    	valid_from TEXT NOT NULL,
+    	number TEXT NOT NULL,
+    	secret_code TEXT NOT NULL,
+    	additional_data TEXT NULL
 	)`
 	if _, err := s.Exec(query); err != nil {
 		return err

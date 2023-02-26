@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(createLoginCmd)
 }
 
 var createLoginCmd = &cobra.Command{

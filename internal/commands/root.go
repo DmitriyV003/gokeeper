@@ -11,6 +11,7 @@ type Deps struct {
 	AuthService        *services.AuthService
 	UserService        *services.UserService
 	LoginSecretService *services.LoginSecretService
+	CardSecretService  *services.CardSecretService
 }
 
 var (

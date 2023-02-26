@@ -42,10 +42,12 @@ func main() {
 	authService := services2.NewAuthService(cfg.JWTSecret, settingsRepo)
 	keysService := services2.NewKeysService(cfg.MasterPassword)
 	loginSecretRepo := sqlite2.NewLoginSecretRepository(db)
+	cardSecretRepo := sqlite2.NewCardSecretRepository(db)
 	deps := commands.Deps{
 		AuthService:        authService,
 		UserService:        services2.NewUserService(client.NewUserClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo),
 		LoginSecretService: services2.NewLoginSecretService(authService, client.NewLoginSecretClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo, cfg.MasterPassword, keysService, loginSecretRepo),
+		CardSecretService:  services2.NewCardSecretService(authService, client.NewCardSecretClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo, cfg.MasterPassword, keysService, cardSecretRepo),
 	}
 
 	commands.Execute(ctx, deps)

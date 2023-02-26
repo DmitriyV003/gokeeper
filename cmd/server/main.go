@@ -49,12 +49,15 @@ func main() {
 	var listen net.Listener
 
 	loginSecretRepo := postgres.NewLoginSecretRepository(pool)
+	cardSecretRepo := postgres.NewCardSecretRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
 	secretService := services.NewSecretService(loginSecretRepo)
 	authService := services2.NewAuthService(userRepo, cfg.JWTSecret)
 	keyService := services.NewKeysService(cfg.MasterPassword)
 	userService := services2.NewUserService(keyService, userRepo)
+	cardsService := services.NewCardReqSecretService(cardSecretRepo)
 	proto.RegisterLoginSecretServiceServer(grpcServer, server.NewLoginSecretServer(secretService))
+	proto.RegisterCardSecretServiceServer(grpcServer, server.NewCardsSecretServer(cardsService))
 	proto.RegisterUserServer(grpcServer, server.NewUserServer(authService, userService))
 
 	g, gCtx := errgroup.WithContext(mainCtx)
