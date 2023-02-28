@@ -12,8 +12,8 @@ import (
 )
 
 type UserService struct {
-	keysService *services.KeysService
-	repo        *postgres.UserRepository
+	keysService KeyService
+	repo        UserRepo
 }
 
 func NewUserService(keysService *services.KeysService, repo *postgres.UserRepository) *UserService {

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"gokeeper/internal/core/services"
 	"gokeeper/internal/proto"
 )
@@ -18,17 +19,30 @@ func NewLoginSecretServer(secretService *services.SecretService) *LoginSecretSer
 }
 
 func (l *LoginSecretServer) CreateLoginSecret(ctx context.Context, req *proto.CreateLoginSecretRequest) (*proto.SecretSecretResponse, error) {
-	id, _ := l.secretService.CreateLoginSecret(ctx, req)
+	id, err := l.secretService.CreateLoginSecret(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("error to create login secret: %w", err)
+	}
 
 	return &proto.SecretSecretResponse{
 		ID: id,
 	}, nil
 }
 
-func (l *LoginSecretServer) UpdateLoginSecret(context.Context, *proto.UpdateLoginSecretRequest) (*proto.SecretSecretResponse, error) {
-	panic("Unimpemented")
+func (l *LoginSecretServer) DeleteLoginSecret(ctx context.Context, req *proto.DeleteLoginSecretRequest) (*proto.SecretSecretResponse, error) {
+	err := l.secretService.DeleteLoginSecret(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("error to delete login secret: %w", err)
+	}
+
+	return &proto.SecretSecretResponse{}, nil
 }
 
-func (l *LoginSecretServer) DeleteLoginSecret(context.Context, *proto.DeleteLoginSecretRequest) (*proto.SecretSecretResponse, error) {
-	panic("Unimpemented")
+func (l *LoginSecretServer) UpdateLoginSecret(ctx context.Context, req *proto.UpdateLoginSecretRequest) (*proto.SecretSecretResponse, error) {
+	err := l.secretService.UpdateLoginSecret(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("error to update login secret: %w", err)
+	}
+
+	return &proto.SecretSecretResponse{}, nil
 }

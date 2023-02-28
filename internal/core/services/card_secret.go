@@ -9,40 +9,43 @@ import (
 	"gokeeper/pkg/crypt"
 )
 
-type LoginSecretService struct {
-	authService     *AuthService
-	client          proto.LoginSecretServiceClient
-	settingsRepo    *sqlite.SettingsRepository
-	masterPassword  string
-	keysService     *KeysService
-	loginSecretRepo *sqlite.LoginSecretRepository
+type CardSecretService struct {
+	authService    *AuthService
+	client         proto.CardSecretServiceClient
+	settingsRepo   *sqlite.SettingsRepository
+	masterPassword string
+	keysService    *KeysService
+	secretRepo     *sqlite.CardSecretRepository
 }
 
-func NewLoginSecretService(
+func NewCardSecretService(
 	authService *AuthService,
-	client proto.LoginSecretServiceClient,
+	client proto.CardSecretServiceClient,
 	settingsRepo *sqlite.SettingsRepository,
 	masterPassword string,
 	keysService *KeysService,
-	loginSecretRepo *sqlite.LoginSecretRepository,
-) *LoginSecretService {
-	return &LoginSecretService{
-		authService:     authService,
-		client:          client,
-		settingsRepo:    settingsRepo,
-		masterPassword:  masterPassword,
-		keysService:     keysService,
-		loginSecretRepo: loginSecretRepo,
+	loginSecretRepo *sqlite.CardSecretRepository,
+) *CardSecretService {
+	return &CardSecretService{
+		authService:    authService,
+		client:         client,
+		settingsRepo:   settingsRepo,
+		masterPassword: masterPassword,
+		keysService:    keysService,
+		secretRepo:     loginSecretRepo,
 	}
 }
 
-func (l *LoginSecretService) Create(ctx context.Context, username, website, password, additionalData string) error {
+func (l *CardSecretService) Create(ctx context.Context, cardholderName, typ, expireDate, validFrom, additionalData, number, secretCode string) error {
 	jwt, _, _ := l.settingsRepo.Get(ctx, "jwt")
-	req := proto.CreateLoginSecretRequest{
-		Username:       username,
-		Website:        website,
-		Password:       "",
+	req := proto.CreateCardSecretRequest{
+		CardholderName: cardholderName,
+		Type:           typ,
+		ExpireDate:     expireDate,
+		ValidFrom:      validFrom,
 		AdditionalData: additionalData,
+		Number:         number,
+		SecretCode:     secretCode,
 	}
 
 	token := Token{
@@ -65,28 +68,31 @@ func (l *LoginSecretService) Create(ctx context.Context, username, website, pass
 	}
 
 	securityService := NewSecurityService(aesSecret, rsaSecret, l.masterPassword, l.keysService)
-	encPassword, err := securityService.CryptMessage(password)
+	encPassword, err := securityService.CryptMessage(secretCode)
 	if err != nil {
 		return fmt.Errorf("error to encrypt secret: %w", err)
 	}
 
 	req.UserID = pId
-	req.Password = encPassword
-	res, _ := l.client.CreateLoginSecret(ctx, &req)
+	req.SecretCode = encPassword
+	res, _ := l.client.CreateCardSecret(ctx, &req)
 
-	l.loginSecretRepo.Create(ctx, core.LoginSecret{
-		Username:       username,
-		Website:        website,
-		Password:       encPassword,
+	l.secretRepo.Create(ctx, core.CardSecret{
+		CardholderName: cardholderName,
+		Type:           typ,
+		ExpireDate:     expireDate,
+		ValidFrom:      validFrom,
+		Number:         number,
 		AdditionalData: additionalData,
+		SecretCode:     encPassword,
 		ID:             res.ID,
 	})
 
 	return nil
 }
 
-func (l *LoginSecretService) Delete(ctx context.Context, id int64) error {
-	if err := l.loginSecretRepo.Delete(ctx, id); err != nil {
+func (l *CardSecretService) Delete(ctx context.Context, id int64) error {
+	if err := l.secretRepo.Delete(ctx, id); err != nil {
 		return fmt.Errorf("delete logins secret: %w", err)
 	}
 
@@ -100,11 +106,11 @@ func (l *LoginSecretService) Delete(ctx context.Context, id int64) error {
 	userId := token.Claims["sub"]
 	pUserId := userId.(int64)
 
-	req := proto.DeleteLoginSecretRequest{
+	req := proto.DeleteCardSecretRequest{
 		Id:     id,
 		UserID: pUserId,
 	}
-	_, err := l.client.DeleteLoginSecret(ctx, &req)
+	_, err := l.client.DeleteCardSecret(ctx, &req)
 	if err != nil {
 		return fmt.Errorf("error to delete login secret: %w", err)
 	}
@@ -112,17 +118,17 @@ func (l *LoginSecretService) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (l *LoginSecretService) GetAll(ctx context.Context, userID int) ([]*core.LoginSecret, error) {
-	logins, err := l.loginSecretRepo.GetAll(ctx, userID)
+func (l *CardSecretService) GetAll(ctx context.Context, userID int) ([]*core.CardSecret, error) {
+	secrets, err := l.secretRepo.GetAll(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get logins secret by id: %w", err)
 	}
 
-	return logins, nil
+	return secrets, nil
 }
 
-func (l *LoginSecretService) Get(ctx context.Context, id int64) (*core.LoginSecret, error) {
-	secret, err := l.loginSecretRepo.GetById(ctx, id)
+func (l *CardSecretService) Get(ctx context.Context, id int64) (*core.CardSecret, error) {
+	secret, err := l.secretRepo.GetById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get login secret by id: %w", err)
 	}
@@ -135,12 +141,12 @@ func (l *LoginSecretService) Get(ctx context.Context, id int64) (*core.LoginSecr
 		return nil, fmt.Errorf("get decrypted AES secret: %w", err)
 	}
 
-	password, err := crypt.DecryptAES([]byte(aesSecret), secret.Password)
+	password, err := crypt.DecryptAES([]byte(aesSecret), secret.SecretCode)
 	if err != nil {
 		return nil, fmt.Errorf("decrypt password on getting login secret: %w", err)
 	}
 
-	secret.Password = password
+	secret.SecretCode = password
 
 	return secret, nil
 }

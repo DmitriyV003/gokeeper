@@ -6,8 +6,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gokeeper/cmd/cli/commands"
 	"gokeeper/internal/client"
+	"gokeeper/internal/commands"
 	config2 "gokeeper/internal/config"
 	services2 "gokeeper/internal/core/services"
 	sqlite2 "gokeeper/internal/data/sqlite"
@@ -42,17 +42,19 @@ func main() {
 	authService := services2.NewAuthService(cfg.JWTSecret, settingsRepo)
 	keysService := services2.NewKeysService(cfg.MasterPassword)
 	loginSecretRepo := sqlite2.NewLoginSecretRepository(db)
+	cardSecretRepo := sqlite2.NewCardSecretRepository(db)
 	deps := commands.Deps{
 		AuthService:        authService,
-		UserService:        services2.NewUserService(client.NewUserClient(ctx, cfg.GrpcServerPort), settingsRepo),
-		LoginSecretService: services2.NewLoginSecretService(authService, client.NewLoginSecretClient(ctx, cfg.GrpcServerPort), settingsRepo, cfg.MasterPassword, keysService, loginSecretRepo),
+		UserService:        services2.NewUserService(client.NewUserClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo),
+		LoginSecretService: services2.NewLoginSecretService(authService, client.NewLoginSecretClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo, cfg.MasterPassword, keysService, loginSecretRepo),
+		CardSecretService:  services2.NewCardSecretService(authService, client.NewCardSecretClient(ctx, cfg.GrpcServerPort, cfg.SslCertPath, cfg.SslKeyPath), settingsRepo, cfg.MasterPassword, keysService, cardSecretRepo),
 	}
 
 	commands.Execute(ctx, deps)
 }
 
-func initConfig() config2.Config {
-	cfg, err := config2.Load()
+func initConfig() config2.ClientConfig {
+	cfg, err := config2.LoadClient()
 	if err != nil {
 		log.Fatal().Err(err).Msgf("can not load config")
 	}

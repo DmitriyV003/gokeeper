@@ -5,14 +5,14 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(createLoginCmd)
 }
 
 var createLoginCmd = &cobra.Command{
 	Use:       "create-login",
 	Short:     "create login secret",
 	Args:      cobra.MinimumNArgs(5),
-	ValidArgs: []string{"name", "username", "website", "password", "additional_data"},
+	ValidArgs: []string{"username", "website", "password", "additional_data"},
 	Run: func(cmd *cobra.Command, args []string) {
 		authorized, err := deps.AuthService.CheckAuthorized(cmd.Context())
 		if err != nil {
@@ -25,9 +25,9 @@ var createLoginCmd = &cobra.Command{
 			return
 		}
 
-		name, username, website, password, additionalData := args[0], args[1], args[2], args[3], args[4]
+		username, website, password, additionalData := args[0], args[1], args[2], args[3]
 
-		if err := deps.LoginSecretService.Create(cmd.Context(), name, username, website, password, additionalData); err != nil {
+		if err := deps.LoginSecretService.Create(cmd.Context(), username, website, password, additionalData); err != nil {
 			if err != nil {
 				cmd.PrintErrln("Error to create login secret.")
 				return

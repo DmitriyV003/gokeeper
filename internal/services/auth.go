@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
 	"gokeeper/internal/core"
-	"gokeeper/internal/data/postgres"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
@@ -13,11 +12,11 @@ import (
 var ErrCredentials = errors.New("credentials don't match")
 
 type AuthService struct {
-	userRepo *postgres.UserRepository
+	userRepo UserRepo
 	secret   string
 }
 
-func NewAuthService(userRepo *postgres.UserRepository, secret string) *AuthService {
+func NewAuthService(userRepo UserRepo, secret string) *AuthService {
 	return &AuthService{
 		userRepo: userRepo,
 		secret:   secret,
